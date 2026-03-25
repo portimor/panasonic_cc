@@ -35,10 +35,39 @@
       "name": "Calentador de agua Panasonic"
     },
     "sensor": {
-      "name": "Sensor Panasonic"
+      "tank_temperature": { "name": "Temperatura del Tanque" },
+      "flow_temperature": { "name": "Temperatura de Impulsión" },
+      "return_temperature": { "name": "Temperatura de Retorno" },
+      "compressor_status": { "name": "Estado del Compresor" },
+      "energy_consumption": { "name": "Consumo de Energía" },
+      "error_code": { "name": "Código de Error" },
+      "alarm_code": { "name": "Código de Alarma" },
+      "pump_duty": { "name": "Ciclo de Trabajo de Bomba" },
+      "current_direction": { "name": "Dirección Actual" },
+      "device_mode_status": { "name": "Estado del Modo" },
+      "inside_temperature": { "name": "Temperatura Interior" },
+      "outside_temperature": { "name": "Temperatura Exterior" },
+      "last_update": { "name": "Última Actualización" },
+      "data_age": { "name": "Antigüedad de Datos" },
+      "status_data_mode": { "name": "Modo de Datos" },
+      "daily_energy_sensor": { "name": "Energía Diaria" },
+      "daily_heating_energy": { "name": "Energía Diaria Calefacción" },
+      "daily_cooling_energy": { "name": "Energía Diaria Refrigeración" },
+      "current_power": { "name": "Potencia Actual" },
+      "cooling_power": { "name": "Potencia de Refrigeración" },
+      "heating_power": { "name": "Potencia de Calefacción" }
     },
     "switch": {
-      "name": "Interruptor Panasonic"
+      "holiday_timer": { "name": "Temporizador Vacaciones" },
+      "nanoe": { "name": "Nanoe" },
+      "eco-navi": { "name": "ECONAVI" },
+      "eco-function": { "name": "Función ECO" },
+      "iauto-x": { "name": "iAUTO-X" },
+      "eco_mode": { "name": "Modo Eco" },
+      "powerful_mode": { "name": "Modo Potente" },
+      "force_heater": { "name": "Forzar Calentador" },
+      "force_dhw": { "name": "Forzar ACS" },
+      "defrost": { "name": "Desescarche" }
     },
     "button": {
       "name": "Botón Panasonic"
@@ -47,7 +76,13 @@
       "name": "Número Panasonic"
     },
     "select": {
-      "name": "Selector Panasonic"
+      "horizontal_swing": { "name": "Oscilación Horizontal" },
+      "vertical_swing": { "name": "Oscilación Vertical" },
+      "quiet_mode": { "name": "Modo Silencioso" },
+      "operation_mode": { "name": "Modo de Operación" },
+      "preset": { "name": "Preajuste" },
+      "powerful_time": { "name": "Tiempo de Modo Potente", "state": {"OFF": "Apagado", "ON_30MIN": "30 Minutos", "ON_60MIN": "60 Minutos", "ON_90MIN": "90 Minutos"} },
+      "special_status": { "name": "Estado Especial", "state": {"OFF": "Normal", "ECO": "Eco", "COMFORT": "Comfort"} }
     }
   },
   "device": {

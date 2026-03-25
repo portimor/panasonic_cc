@@ -131,10 +131,10 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 translation_key="special_status",
                 name="Special Status",
                 icon="mdi:leaf",
-                options=[e.name for e in aioaquarea.SpecialStatus],
-                set_option=lambda dev, val: dev.set_special_status(aioaquarea.SpecialStatus[val]),
-                get_current_option=lambda dev: getattr(dev.special_status, "name", str(dev.special_status)),
-                is_available=lambda dev: dev.special_status is not None,
+                options=["OFF"] + [e.name for e in aioaquarea.SpecialStatus],
+                set_option=lambda dev, val: dev.set_special_status(None if val == "OFF" else aioaquarea.SpecialStatus[val]),
+                get_current_option=lambda dev: getattr(dev.special_status, "name", "OFF") if dev.special_status is not None else "OFF",
+                is_available=lambda dev: True,
             )
             entities.append(AquareaSelectEntity(coordinator, special_desc))
 
