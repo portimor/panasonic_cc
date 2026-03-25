@@ -11,6 +11,7 @@ from .const import (
     SELECT_VERTICAL_SWING,
 )
 from aio_panasonic_comfort_cloud import PanasonicDevice, ChangeRequestBuilder, constants
+import aioaquarea
 
 from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
 from .base import PanasonicDataEntity, AquareaDataEntity
@@ -115,8 +116,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 translation_key="powerful_time",
                 name="Powerful Time",
                 icon="mdi:timer-outline",
-                options=[e.name for e in __import__("aioaquarea").constants.PowerfulTime],
-                set_option=lambda dev, val: dev.set_powerful_time(__import__("aioaquarea").constants.PowerfulTime[val]),
+                options=[e.name for e in aioaquarea.PowerfulTime],
+                set_option=lambda dev, val: dev.set_powerful_time(aioaquarea.PowerfulTime[val]),
                 get_current_option=lambda dev: getattr(dev.powerful_time, "name", str(dev.powerful_time)),
                 is_available=lambda dev: dev.powerful_time is not None,
             )
@@ -129,8 +130,8 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
                 translation_key="special_status",
                 name="Special Status",
                 icon="mdi:leaf",
-                options=[e.name for e in __import__("aioaquarea").constants.SpecialStatus],
-                set_option=lambda dev, val: dev.set_special_status(__import__("aioaquarea").constants.SpecialStatus[val]),
+                options=[e.name for e in aioaquarea.SpecialStatus],
+                set_option=lambda dev, val: dev.set_special_status(aioaquarea.SpecialStatus[val]),
                 get_current_option=lambda dev: getattr(dev.special_status, "name", str(dev.special_status)),
                 is_available=lambda dev: dev.special_status is not None,
             )

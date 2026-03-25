@@ -17,6 +17,7 @@ from aio_panasonic_comfort_cloud import (
     PanasonicDeviceZone,
     ChangeRequestBuilder,
 )
+import aioaquarea
 
 
 from . import DOMAIN
@@ -131,8 +132,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
                 translation_key="holiday_timer",
                 name="Holiday Timer",
                 icon="mdi:calendar-clock",
-                on_func=lambda dev: dev.set_holiday_timer(1 if type(dev.holiday_timer).__name__ == "int" else __import__("aioaquarea").constants.HolidayTimer.ON),
-                off_func=lambda dev: dev.set_holiday_timer(0 if type(dev.holiday_timer).__name__ == "int" else __import__("aioaquarea").constants.HolidayTimer.OFF),
+                on_func=lambda dev: dev.set_holiday_timer(1 if type(dev.holiday_timer).__name__ == "int" else aioaquarea.HolidayTimer.ON),
+                off_func=lambda dev: dev.set_holiday_timer(0 if type(dev.holiday_timer).__name__ == "int" else aioaquarea.HolidayTimer.OFF),
                 get_state=lambda dev: getattr(dev.holiday_timer, "name", str(dev.holiday_timer)) == "ON" or dev.holiday_timer == 1,
                 is_available=lambda dev: dev.holiday_timer is not None,
             )
