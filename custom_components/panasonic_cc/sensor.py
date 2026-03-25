@@ -370,7 +370,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 name="Pump Duty",
                 icon="mdi:pump",
                 entity_category=EntityCategory.DIAGNOSTIC,
-                state_class=SensorStateClass.MEASUREMENT,
                 get_state=lambda dev: getattr(getattr(dev, "pump_duty", None), "name", getattr(dev, "pump_duty", None)),
                 is_available=lambda dev: getattr(dev, "pump_duty", None) is not None,
             )
