@@ -414,32 +414,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
             )
             entities.append(AquareaSensorEntity(coordinator, mode_desc))
             
-        # Holiday Timer
-        if hasattr(device, "holiday_timer"):
-            hol_desc = AquareaSensorEntityDescription(
-                key="holiday_timer",
-                translation_key="holiday_timer",
-                name="Holiday Timer",
-                icon="mdi:calendar-clock",
-                entity_category=EntityCategory.DIAGNOSTIC,
-                get_state=lambda dev: getattr(getattr(dev, "holiday_timer", None), "name", getattr(dev, "holiday_timer", None)),
-                is_available=lambda dev: getattr(dev, "holiday_timer", None) is not None,
-            )
-            entities.append(AquareaSensorEntity(coordinator, hol_desc))
-            
-        # Powerful Time
-        if hasattr(device, "powerful_time"):
-            pow_desc = AquareaSensorEntityDescription(
-                key="powerful_time",
-                translation_key="powerful_time",
-                name="Powerful Time",
-                icon="mdi:timer-outline",
-                entity_category=EntityCategory.DIAGNOSTIC,
-                get_state=lambda dev: getattr(getattr(dev, "powerful_time", None), "name", getattr(dev, "powerful_time", None)),
-                is_available=lambda dev: getattr(dev, "powerful_time", None) is not None,
-            )
-            entities.append(AquareaSensorEntity(coordinator, pow_desc))
-
     async_add_entities(entities)
 
 

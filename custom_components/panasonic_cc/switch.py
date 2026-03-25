@@ -26,7 +26,7 @@ from .const import (
     DEFAULT_FORCE_ENABLE_NANOE,
 )
 from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
-from .base import PanasonicDataEntity
+from .base import PanasonicDataEntity, AquareaDataEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -123,6 +123,20 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     # --- Aquarea switches ---
     for coordinator in aquarea_coordinators:
         device = coordinator.device
+        
+        # Holiday Timer
+        if hasattr(device, "holiday_timer") and hasattr(device, "set_holiday_timer"):
+            hol_desc = AquareaSwitchEntityDescription(
+                key="holiday_timer",
+                translation_key="holiday_timer",
+                name="Holiday Timer",
+                icon="mdi:calendar-clock",
+                on_func=lambda dev: dev.set_holiday_timer(1 if type(dev.holiday_timer).__name__ == "int" else __import__("aioaquarea").constants.HolidayTimer.ON),
+                off_func=lambda dev: dev.set_holiday_timer(0 if type(dev.holiday_timer).__name__ == "int" else __import__("aioaquarea").constants.HolidayTimer.OFF),
+                get_state=lambda dev: getattr(dev.holiday_timer, "name", str(dev.holiday_timer)) == "ON" or dev.holiday_timer == 1,
+                is_available=lambda dev: dev.holiday_timer is not None,
+            )
+            devices.append(AquareaSwitchEntity(coordinator, hol_desc))
         # Nanoe
         if hasattr(device, "has_nanoe") and getattr(device, "has_nanoe", False):
             devices.append(PanasonicSwitchEntity(coordinator, NANOE_DESCRIPTION))
@@ -245,3 +259,38 @@ class PanasonicSwitchEntity(PanasonicDataEntity, PanasonicSwitchEntityBase):
         await self.coordinator.async_apply_changes(builder)
         self._attr_is_on = False
         self.async_write_ha_state()
+
+@dataclass(frozen=True, kw_only=True)
+class AquareaSwitchEntityDescription(SwitchEntityDescription):
+    """Describes Aquarea Switch entity."""
+    on_func: Callable[['AquareaDevice'], Any]
+    off_func: Callable[['AquareaDevice'], Any]
+    get_state: Callable[['AquareaDevice'], bool]
+    is_available: Callable[['AquareaDevice'], bool]
+
+class AquareaSwitchEntity(AquareaDataEntity, SwitchEntity):
+    _attr_device_class = SwitchDeviceClass.SWITCH
+    entity_description: AquareaSwitchEntityDescription
+
+    def __init__(self, coordinator: AquareaDeviceCoordinator, description: AquareaSwitchEntityDescription):
+        self.entity_description = description
+        super().__init__(coordinator, description.key)
+
+    @property
+    def available(self) -> bool:
+        return self.entity_description.is_available(self.coordinator.device)
+
+    def _async_update_attrs(self) -> None:
+        self._attr_available = self.available
+        self._attr_is_on = self.entity_description.get_state(self.coordinator.device)
+
+    async def async_turn_on(self, **kwargs):
+        await self.entity_description.on_func(self.coordinator.device)
+        self._attr_is_on = True
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs):
+        await self.entity_description.off_func(self.coordinator.device)
+        self._attr_is_on = False
+        self.async_write_ha_state()
+

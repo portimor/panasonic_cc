@@ -13,8 +13,7 @@ from .const import (
 from aio_panasonic_comfort_cloud import PanasonicDevice, ChangeRequestBuilder, constants
 
 from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
-from .base import PanasonicDataEntity
-
+from .base import PanasonicDataEntity, AquareaDataEntity
 
 @dataclass(frozen=True, kw_only=True)
 class PanasonicSelectEntityDescription(SelectEntityDescription):
@@ -109,6 +108,20 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             )
             entities.append(PanasonicSelectEntity(coordinator, preset_desc))
 
+        # Powerful Time
+        if hasattr(device, "powerful_time") and hasattr(device, "set_powerful_time"):
+            pow_desc = AquareaSelectEntityDescription(
+                key="powerful_time",
+                translation_key="powerful_time",
+                name="Powerful Time",
+                icon="mdi:timer-outline",
+                options=[e.name for e in __import__("aioaquarea").constants.PowerfulTime],
+                set_option=lambda dev, val: dev.set_powerful_time(__import__("aioaquarea").constants.PowerfulTime[val]),
+                get_current_option=lambda dev: getattr(dev.powerful_time, "name", str(dev.powerful_time)),
+                is_available=lambda dev: dev.powerful_time is not None,
+            )
+            entities.append(AquareaSelectEntity(coordinator, pow_desc))
+
     async_add_entities(entities)
 
 
@@ -143,6 +156,35 @@ class PanasonicSelectEntity(PanasonicDataEntity, PanasonicSelectEntityBase):
         self.async_write_ha_state()
 
     def _async_update_attrs(self) -> None:
-        self.current_option = self.entity_description.get_current_option(
+        self._attr_current_option = self.entity_description.get_current_option(
             self.coordinator.device
         )
+
+@dataclass(frozen=True, kw_only=True)
+class AquareaSelectEntityDescription(SelectEntityDescription):
+    """Description of an Aquarea select entity."""
+    set_option: Callable[['AquareaDevice', str], Any]
+    get_current_option: Callable[['AquareaDevice'], str]
+    is_available: Callable[['AquareaDevice'], bool]
+
+class AquareaSelectEntity(AquareaDataEntity, SelectEntity):
+    entity_description: AquareaSelectEntityDescription
+
+    def __init__(self, coordinator: AquareaDeviceCoordinator, description: AquareaSelectEntityDescription):
+        self.entity_description = description
+        self._attr_options = description.options
+        super().__init__(coordinator, description.key)
+
+    @property
+    def available(self) -> bool:
+        return self.entity_description.is_available(self.coordinator.device)
+
+    async def async_select_option(self, option: str) -> None:
+        await self.entity_description.set_option(self.coordinator.device, option)
+        self._attr_current_option = option
+        self.async_write_ha_state()
+
+    def _async_update_attrs(self) -> None:
+        self._attr_available = self.available
+        self._attr_current_option = self.entity_description.get_current_option(self.coordinator.device)
+
