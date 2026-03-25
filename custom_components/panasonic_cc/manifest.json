@@ -2,7 +2,7 @@
     "domain": "panasonic_cc",
     "name": "Portimor Comfort Cloud",
     "after_dependencies": ["http"],
-    "version": "2025.5.3",
+    "version": "2025.5.4",
     "config_flow": true,
     "documentation": "https://github.com/portimor/panasonic_cc/",
     "dependencies": [],

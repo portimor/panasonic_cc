@@ -369,8 +369,9 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 translation_key="pump_duty",
                 name="Pump Duty",
                 icon="mdi:pump",
+                entity_category=EntityCategory.DIAGNOSTIC,
                 state_class=SensorStateClass.MEASUREMENT,
-                get_state=lambda dev: getattr(dev, "pump_duty", None),
+                get_state=lambda dev: getattr(getattr(dev, "pump_duty", None), "name", getattr(dev, "pump_duty", None)),
                 is_available=lambda dev: getattr(dev, "pump_duty", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, pump_desc))
@@ -382,7 +383,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 translation_key="current_direction",
                 name="Current Direction",
                 icon="mdi:directions-fork",
-                get_state=lambda dev: getattr(dev, "current_direction", None),
+                entity_category=EntityCategory.DIAGNOSTIC,
+                get_state=lambda dev: getattr(getattr(dev, "current_direction", None), "name", getattr(dev, "current_direction", None)),
                 is_available=lambda dev: getattr(dev, "current_direction", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, dir_desc))
@@ -394,7 +396,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 translation_key="special_status",
                 name="Special Status",
                 icon="mdi:information",
-                get_state=lambda dev: getattr(dev, "special_status", None),
+                entity_category=EntityCategory.DIAGNOSTIC,
+                get_state=lambda dev: getattr(getattr(dev, "special_status", None), "name", getattr(dev, "special_status", None)),
                 is_available=lambda dev: getattr(dev, "special_status", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, special_desc))
@@ -406,7 +409,8 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 translation_key="device_mode_status",
                 name="Device Mode Status",
                 icon="mdi:list-status",
-                get_state=lambda dev: getattr(dev, "device_mode_status", None),
+                entity_category=EntityCategory.DIAGNOSTIC,
+                get_state=lambda dev: getattr(getattr(dev, "device_mode_status", None), "name", getattr(dev, "device_mode_status", None)),
                 is_available=lambda dev: getattr(dev, "device_mode_status", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, mode_desc))
@@ -418,21 +422,21 @@ async def async_setup_entry(hass, entry, async_add_entities):
                 translation_key="holiday_timer",
                 name="Holiday Timer",
                 icon="mdi:calendar-clock",
-                get_state=lambda dev: getattr(dev, "holiday_timer", None),
+                entity_category=EntityCategory.DIAGNOSTIC,
+                get_state=lambda dev: getattr(getattr(dev, "holiday_timer", None), "name", getattr(dev, "holiday_timer", None)),
                 is_available=lambda dev: getattr(dev, "holiday_timer", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, hol_desc))
             
         # Powerful Time
-        if hasattr(device, " शक्तिशाली_time"): # Wait, typo, let me use powerful_time.
-            pass
         if hasattr(device, "powerful_time"):
             pow_desc = AquareaSensorEntityDescription(
                 key="powerful_time",
                 translation_key="powerful_time",
                 name="Powerful Time",
                 icon="mdi:timer-outline",
-                get_state=lambda dev: getattr(dev, "powerful_time", None),
+                entity_category=EntityCategory.DIAGNOSTIC,
+                get_state=lambda dev: getattr(getattr(dev, "powerful_time", None), "name", getattr(dev, "powerful_time", None)),
                 is_available=lambda dev: getattr(dev, "powerful_time", None) is not None,
             )
             entities.append(AquareaSensorEntity(coordinator, pow_desc))
