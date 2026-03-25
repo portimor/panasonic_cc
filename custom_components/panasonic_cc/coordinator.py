@@ -250,14 +250,20 @@ class AquareaDeviceCoordinator(DataUpdateCoordinator):
             or getattr(self._device, "name", None)
             or self._aquarea_device_info.name
         )
+        if not name or name == "N/A" or name == "Unknown":
+            name = "Aquarea Device"
+            
         manufacturer = getattr(self._device, "manufacturer", None) or "Panasonic"
         model = getattr(self._device, "model", None) or getattr(self._aquarea_device_info, "model", "")
         # Acceso seguro a versión
         sw_version = (
             getattr(self._device, "firmware_version", None)
             or getattr(self._device, "version", None)
-            or getattr(self._aquarea_device_info, "version", None)
+            or getattr(self._aquarea_device_info, "firmware_version", None)
         )
+        if not sw_version or sw_version == "N/A" or sw_version == "Unknown":
+            sw_version = "Unknown"
+            
         # Logging de atributos disponibles
         if self._device is not None:
             _LOGGER.debug("Aquarea device attributes: %s", dir(self._device))
