@@ -20,7 +20,7 @@ from aioaquarea import (
     AquareaEnvironment,
 )
 from aioaquarea.data import DeviceInfo as AquareaDeviceInfo
-from aioaquarea.errors import AuthenticationError, RequestFailedError
+from aioaquarea.errors import AuthenticationError, RequestFailedError, ApiError, ClientError
 from .const import (
     DOMAIN,
     MANUFACTURER,
@@ -290,38 +290,40 @@ class AquareaDeviceCoordinator(DataUpdateCoordinator):
                 self._update_id = self._update_id + 1
                 return self._update_id
 
-            except AuthenticationError as auth_err:
+            except (AuthenticationError, RequestFailedError, ClientError, ApiError) as err:
                 if attempt == 2:
                     _LOGGER.error(
-                        "Authentication failed after retry: %s",
-                        auth_err,
-                        exc_info=auth_err,
+                        "Aquarea fetch failed after retry: %s",
+                        err,
                     )
                     raise UpdateFailed(
-                        f"Invalid response from API: {auth_err}"
-                    ) from auth_err
-                _LOGGER.warning(
-                    "Aquarea token expired, re-authenticating and retrying once"
-                )
-                await self._api_client.login()
-                self._device = None
-
-            except RequestFailedError as req_err:
-                cause = req_err.__cause__
-                if attempt == 1 and isinstance(cause, AuthenticationError):
+                        f"Invalid response from API: {err}"
+                    ) from err
+                    
+                error_str = str(err).lower()
+                # Si el error está relacionado la autenticación o token expirado
+                if isinstance(err, AuthenticationError) or "token" in error_str or "auth" in error_str:
                     _LOGGER.warning(
-                        "Aquarea request failed due to expired token, re-authenticating and retrying"
+                        "Aquarea token expired or auth error, re-authenticating and retrying once"
                     )
                     await self._api_client.login()
                     self._device = None
                     continue
-                _LOGGER.error(
-                    "Error fetching device data from API: %s", req_err, exc_info=req_err
+                
+                # Si es un error de API comunicándose con el adaptador
+                if isinstance(err, ApiError) and "failed communication with adaptor" in error_str:
+                    _LOGGER.warning("Panasonic Cloud cannot communicate with the Aquarea WiFi module. It may be offline.")
+                    raise UpdateFailed("Adaptor offline or unreachable") from err
+                    
+                # Cualquier otra API Error / ClientError, probamos loguear de nuevo por si acaso
+                _LOGGER.warning(
+                    "Aquarea request failed: %s, re-authenticating and retrying", err
                 )
-                raise UpdateFailed(f"Invalid response from API: {req_err}") from req_err
+                await self._api_client.login()
+                self._device = None
 
             except BaseException as e:
-                _LOGGER.error("Error fetching device data from API: %s", e, exc_info=e)
+                _LOGGER.error("Unexpected error fetching device data from API: %s", e, exc_info=e)
                 raise UpdateFailed(f"Invalid response from API: {e}") from e
 
         return self._update_id
