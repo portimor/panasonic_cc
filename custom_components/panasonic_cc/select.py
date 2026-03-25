@@ -122,6 +122,20 @@ async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
             )
             entities.append(AquareaSelectEntity(coordinator, pow_desc))
 
+        # Special Status
+        if hasattr(device, "special_status") and hasattr(device, "set_special_status"):
+            special_desc = AquareaSelectEntityDescription(
+                key="special_status",
+                translation_key="special_status",
+                name="Special Status",
+                icon="mdi:leaf",
+                options=[e.name for e in __import__("aioaquarea").constants.SpecialStatus],
+                set_option=lambda dev, val: dev.set_special_status(__import__("aioaquarea").constants.SpecialStatus[val]),
+                get_current_option=lambda dev: getattr(dev.special_status, "name", str(dev.special_status)),
+                is_available=lambda dev: dev.special_status is not None,
+            )
+            entities.append(AquareaSelectEntity(coordinator, special_desc))
+
     async_add_entities(entities)
 
 

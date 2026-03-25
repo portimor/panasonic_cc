@@ -388,19 +388,6 @@ async def async_setup_entry(hass, entry, async_add_entities):
             )
             entities.append(AquareaSensorEntity(coordinator, dir_desc))
             
-        # Special Status
-        if hasattr(device, "special_status"):
-            special_desc = AquareaSensorEntityDescription(
-                key="special_status",
-                translation_key="special_status",
-                name="Special Status",
-                icon="mdi:information",
-                entity_category=EntityCategory.DIAGNOSTIC,
-                get_state=lambda dev: getattr(getattr(dev, "special_status", None), "name", getattr(dev, "special_status", None)),
-                is_available=lambda dev: getattr(dev, "special_status", None) is not None,
-            )
-            entities.append(AquareaSensorEntity(coordinator, special_desc))
-            
         # Device Mode Status
         if hasattr(device, "device_mode_status"):
             mode_desc = AquareaSensorEntityDescription(
