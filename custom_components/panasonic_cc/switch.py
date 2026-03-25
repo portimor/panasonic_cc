@@ -25,6 +25,7 @@ from .const import (
     DATA_COORDINATORS,
     CONF_FORCE_ENABLE_NANOE,
     DEFAULT_FORCE_ENABLE_NANOE,
+    AQUAREA_COORDINATORS,
 )
 from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
 from .base import PanasonicDataEntity, AquareaDataEntity
@@ -108,7 +109,7 @@ def create_zone_mode_description(zone: PanasonicDeviceZone):
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     devices = []
     data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][DATA_COORDINATORS]
-    aquarea_coordinators = hass.data[DOMAIN].get("aquarea_coordinators", [])
+    aquarea_coordinators = hass.data[DOMAIN].get(AQUAREA_COORDINATORS, [])
     force_enable_nanoe = entry.options.get(CONF_FORCE_ENABLE_NANOE, DEFAULT_FORCE_ENABLE_NANOE)
 
     # Comfort Cloud switches (legacy)

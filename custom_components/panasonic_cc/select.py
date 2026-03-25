@@ -9,6 +9,7 @@ from .const import (
     DATA_COORDINATORS,
     SELECT_HORIZONTAL_SWING,
     SELECT_VERTICAL_SWING,
+    AQUAREA_COORDINATORS,
 )
 from aio_panasonic_comfort_cloud import PanasonicDevice, ChangeRequestBuilder, constants
 import aioaquarea
@@ -60,7 +61,7 @@ VERTICAL_SWING_DESCRIPTION = PanasonicSelectEntityDescription(
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     entities = []
     data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][DATA_COORDINATORS]
-    aquarea_coordinators = hass.data[DOMAIN].get("aquarea_coordinators", [])
+    aquarea_coordinators = hass.data[DOMAIN].get(AQUAREA_COORDINATORS, [])
 
     for coordinator in data_coordinators:
         entities.append(PanasonicSelectEntity(coordinator, HORIZONTAL_SWING_DESCRIPTION))
