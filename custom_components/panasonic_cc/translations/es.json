@@ -1,0 +1,68 @@
+{
+  "title": "Control de Climatización Panasonic",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Configurar integración Panasonic CC",
+        "description": "Introduce los datos de tu dispositivo Panasonic.",
+        "data": {
+          "username": "Usuario",
+          "password": "Contraseña",
+          "device_id": "ID del dispositivo"
+        }
+      }
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Opciones de Panasonic CC",
+        "description": "Configura las opciones avanzadas de la integración."
+      }
+    }
+  },
+  "entity": {
+    "climate": {
+      "name": "Aire acondicionado Panasonic",
+      "state": {
+        "cool": "Enfriando",
+        "heat": "Calentando",
+        "auto": "Automático",
+        "off": "Apagado"
+      }
+    },
+    "water_heater": {
+      "name": "Calentador de agua Panasonic"
+    },
+    "sensor": {
+      "name": "Sensor Panasonic"
+    },
+    "switch": {
+      "name": "Interruptor Panasonic"
+    },
+    "button": {
+      "name": "Botón Panasonic"
+    },
+    "number": {
+      "name": "Número Panasonic"
+    },
+    "select": {
+      "name": "Selector Panasonic"
+    }
+  },
+  "device": {
+    "name": "Dispositivo Panasonic CC",
+    "manufacturer": "Panasonic"
+  },
+  "services": {
+    "set_temperature": {
+      "name": "Establecer temperatura",
+      "description": "Establece la temperatura del dispositivo Panasonic."
+    }
+  },
+  "errors": {
+    "cannot_connect": "No se puede conectar al dispositivo.",
+    "invalid_auth": "Autenticación inválida.",
+    "unknown": "Error desconocido."
+  }
+}
