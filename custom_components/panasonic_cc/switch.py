@@ -25,7 +25,7 @@ from .const import (
     CONF_FORCE_ENABLE_NANOE,
     DEFAULT_FORCE_ENABLE_NANOE,
 )
-from .coordinator import PanasonicDeviceCoordinator
+from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
 from .base import PanasonicDataEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -103,34 +103,94 @@ def create_zone_mode_description(zone: PanasonicDeviceZone):
     )
 
 
-async def async_setup_entry(
-    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
-):
+
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     devices = []
-    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][
-        DATA_COORDINATORS
-    ]
-    force_enable_nanoe = entry.options.get(
-        CONF_FORCE_ENABLE_NANOE, DEFAULT_FORCE_ENABLE_NANOE
-    )
+    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][DATA_COORDINATORS]
+    aquarea_coordinators = hass.data[DOMAIN].get("aquarea_coordinators", [])
+    force_enable_nanoe = entry.options.get(CONF_FORCE_ENABLE_NANOE, DEFAULT_FORCE_ENABLE_NANOE)
+
+    # Comfort Cloud switches (legacy)
     for data_coordinator in data_coordinators:
-        devices.append(
-            PanasonicSwitchEntity(
-                data_coordinator, NANOE_DESCRIPTION, always_available=force_enable_nanoe
-            )
-        )
+        devices.append(PanasonicSwitchEntity(data_coordinator, NANOE_DESCRIPTION, always_available=force_enable_nanoe))
         devices.append(PanasonicSwitchEntity(data_coordinator, ECONAVI_DESCRIPTION))
-        devices.append(
-            PanasonicSwitchEntity(data_coordinator, ECO_FUNCTION_DESCRIPTION)
-        )
+        devices.append(PanasonicSwitchEntity(data_coordinator, ECO_FUNCTION_DESCRIPTION))
         devices.append(PanasonicSwitchEntity(data_coordinator, IAUTOX_DESCRIPTION))
         if data_coordinator.device.has_zones:
             for zone in data_coordinator.device.parameters.zones:
-                devices.append(
-                    PanasonicSwitchEntity(
-                        data_coordinator, create_zone_mode_description(zone)
-                    )
-                )
+                devices.append(PanasonicSwitchEntity(data_coordinator, create_zone_mode_description(zone)))
+
+    # --- Aquarea switches ---
+    for coordinator in aquarea_coordinators:
+        device = coordinator.device
+        # Nanoe
+        if hasattr(device, "has_nanoe") and getattr(device, "has_nanoe", False):
+            devices.append(PanasonicSwitchEntity(coordinator, NANOE_DESCRIPTION))
+        # Eco mode
+        if hasattr(device, "has_eco_mode") and getattr(device, "has_eco_mode", False):
+            eco_desc = PanasonicSwitchEntityDescription(
+                key="eco_mode",
+                translation_key="eco_mode",
+                name="Eco Mode",
+                icon="mdi:leaf",
+                on_func=lambda builder: builder.set_eco_mode(True),
+                off_func=lambda builder: builder.set_eco_mode(False),
+                get_state=lambda dev: getattr(dev, "eco_mode", False),
+                is_available=lambda dev: getattr(dev, "has_eco_mode", False),
+            )
+            devices.append(PanasonicSwitchEntity(coordinator, eco_desc))
+        # Powerful mode
+        if hasattr(device, "has_powerful_mode") and getattr(device, "has_powerful_mode", False):
+            powerful_desc = PanasonicSwitchEntityDescription(
+                key="powerful_mode",
+                translation_key="powerful_mode",
+                name="Powerful Mode",
+                icon="mdi:flash",
+                on_func=lambda builder: builder.set_powerful_mode(True),
+                off_func=lambda builder: builder.set_powerful_mode(False),
+                get_state=lambda dev: getattr(dev, "powerful_mode", False),
+                is_available=lambda dev: getattr(dev, "has_powerful_mode", False),
+            )
+            devices.append(PanasonicSwitchEntity(coordinator, powerful_desc))
+        # Force heater
+        if hasattr(device, "has_force_heater") and getattr(device, "has_force_heater", False):
+            force_heater_desc = PanasonicSwitchEntityDescription(
+                key="force_heater",
+                translation_key="force_heater",
+                name="Force Heater",
+                icon="mdi:radiator",
+                on_func=lambda builder: builder.set_force_heater(True),
+                off_func=lambda builder: builder.set_force_heater(False),
+                get_state=lambda dev: getattr(dev, "force_heater", False),
+                is_available=lambda dev: getattr(dev, "has_force_heater", False),
+            )
+            devices.append(PanasonicSwitchEntity(coordinator, force_heater_desc))
+        # Force DHW
+        if hasattr(device, "has_force_dhw") and getattr(device, "has_force_dhw", False):
+            force_dhw_desc = PanasonicSwitchEntityDescription(
+                key="force_dhw",
+                translation_key="force_dhw",
+                name="Force DHW",
+                icon="mdi:water-boiler",
+                on_func=lambda builder: builder.set_force_dhw(True),
+                off_func=lambda builder: builder.set_force_dhw(False),
+                get_state=lambda dev: getattr(dev, "force_dhw", False),
+                is_available=lambda dev: getattr(dev, "has_force_dhw", False),
+            )
+            devices.append(PanasonicSwitchEntity(coordinator, force_dhw_desc))
+        # Defrost
+        if hasattr(device, "has_defrost") and getattr(device, "has_defrost", False):
+            defrost_desc = PanasonicSwitchEntityDescription(
+                key="defrost",
+                translation_key="defrost",
+                name="Defrost",
+                icon="mdi:snowflake-melt",
+                on_func=lambda builder: builder.set_defrost(True),
+                off_func=lambda builder: builder.set_defrost(False),
+                get_state=lambda dev: getattr(dev, "defrost", False),
+                is_available=lambda dev: getattr(dev, "has_defrost", False),
+            )
+            devices.append(PanasonicSwitchEntity(coordinator, defrost_desc))
 
     async_add_entities(devices)
 

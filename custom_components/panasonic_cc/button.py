@@ -7,7 +7,7 @@ from homeassistant.components.button import ButtonEntity, ButtonEntityDescriptio
 from homeassistant.const import EntityCategory
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from .const import DOMAIN, DATA_COORDINATORS, ENERGY_COORDINATORS
-from .coordinator import PanasonicDeviceCoordinator, PanasonicDeviceEnergyCoordinator
+from .coordinator import PanasonicDeviceCoordinator, PanasonicDeviceEnergyCoordinator, AquareaDeviceCoordinator
 from .base import PanasonicDataEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -42,24 +42,49 @@ UPDATE_ENERGY_DESCRIPTION = ButtonEntityDescription(
 )
 
 
+
 async def async_setup_entry(hass: HomeAssistant, config, async_add_entities):
     entities = []
-    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][
-        DATA_COORDINATORS
-    ]
-    energy_coordinators: list[PanasonicDeviceEnergyCoordinator] = hass.data[DOMAIN][
-        ENERGY_COORDINATORS
-    ]
+    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][DATA_COORDINATORS]
+    energy_coordinators: list[PanasonicDeviceEnergyCoordinator] = hass.data[DOMAIN][ENERGY_COORDINATORS]
+    aquarea_coordinators = hass.data[DOMAIN].get("aquarea_coordinators", [])
 
     for coordinator in data_coordinators:
         entities.append(PanasonicButtonEntity(coordinator, APP_VERSION_DESCRIPTION))
-        entities.append(
-            CoordinatorUpdateButtonEntity(coordinator, UPDATE_DATA_DESCRIPTION)
-        )
+        entities.append(CoordinatorUpdateButtonEntity(coordinator, UPDATE_DATA_DESCRIPTION))
     for coordinator in energy_coordinators:
-        entities.append(
-            CoordinatorUpdateButtonEntity(coordinator, UPDATE_ENERGY_DESCRIPTION)
-        )
+        entities.append(CoordinatorUpdateButtonEntity(coordinator, UPDATE_ENERGY_DESCRIPTION))
+
+    # --- Aquarea buttons ---
+    for coordinator in aquarea_coordinators:
+        device = coordinator.device
+        # Force DHW trigger
+        if hasattr(device, "has_force_dhw_trigger") and getattr(device, "has_force_dhw_trigger", False):
+            force_dhw_btn = PanasonicButtonEntityDescription(
+                key="force_dhw_trigger",
+                name="Force DHW Trigger",
+                icon="mdi:water-boiler",
+                func=lambda coord: coord.api_client.force_dhw(),
+            )
+            entities.append(PanasonicButtonEntity(coordinator, force_dhw_btn))
+        # Reset alarms
+        if hasattr(device, "has_reset_alarm") and getattr(device, "has_reset_alarm", False):
+            reset_alarm_btn = PanasonicButtonEntityDescription(
+                key="reset_alarm",
+                name="Reset Alarm",
+                icon="mdi:alert-remove",
+                func=lambda coord: coord.api_client.reset_alarm(),
+            )
+            entities.append(PanasonicButtonEntity(coordinator, reset_alarm_btn))
+        # Manual boost
+        if hasattr(device, "has_manual_boost") and getattr(device, "has_manual_boost", False):
+            boost_btn = PanasonicButtonEntityDescription(
+                key="manual_boost",
+                name="Manual Boost",
+                icon="mdi:rocket-launch",
+                func=lambda coord: coord.api_client.manual_boost(),
+            )
+            entities.append(PanasonicButtonEntity(coordinator, boost_btn))
 
     async_add_entities(entities)
 

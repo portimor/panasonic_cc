@@ -12,7 +12,7 @@ from .const import (
 )
 from aio_panasonic_comfort_cloud import PanasonicDevice, ChangeRequestBuilder, constants
 
-from .coordinator import PanasonicDeviceCoordinator
+from .coordinator import PanasonicDeviceCoordinator, AquareaDeviceCoordinator
 from .base import PanasonicDataEntity
 
 
@@ -56,16 +56,58 @@ VERTICAL_SWING_DESCRIPTION = PanasonicSelectEntityDescription(
 )
 
 
+
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities):
     entities = []
-    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][
-        DATA_COORDINATORS
-    ]
+    data_coordinators: list[PanasonicDeviceCoordinator] = hass.data[DOMAIN][DATA_COORDINATORS]
+    aquarea_coordinators = hass.data[DOMAIN].get("aquarea_coordinators", [])
+
     for coordinator in data_coordinators:
-        entities.append(
-            PanasonicSelectEntity(coordinator, HORIZONTAL_SWING_DESCRIPTION)
-        )
+        entities.append(PanasonicSelectEntity(coordinator, HORIZONTAL_SWING_DESCRIPTION))
         entities.append(PanasonicSelectEntity(coordinator, VERTICAL_SWING_DESCRIPTION))
+
+    # --- Aquarea selects ---
+    for coordinator in aquarea_coordinators:
+        device = coordinator.device
+        # Quiet mode
+        if hasattr(device, "has_quiet_mode") and getattr(device, "has_quiet_mode", False):
+            quiet_desc = PanasonicSelectEntityDescription(
+                key="quiet_mode",
+                translation_key="quiet_mode",
+                name="Quiet Mode",
+                icon="mdi:volume-off",
+                options=getattr(device, "quiet_modes", []),
+                set_option=lambda builder, value: builder.set_quiet_mode(value),
+                get_current_option=lambda dev: getattr(dev, "quiet_mode", None),
+                is_available=lambda dev: getattr(dev, "has_quiet_mode", False),
+            )
+            entities.append(PanasonicSelectEntity(coordinator, quiet_desc))
+        # Operation mode
+        if hasattr(device, "has_operation_mode") and getattr(device, "has_operation_mode", False):
+            op_desc = PanasonicSelectEntityDescription(
+                key="operation_mode",
+                translation_key="operation_mode",
+                name="Operation Mode",
+                icon="mdi:cog",
+                options=getattr(device, "operation_modes", []),
+                set_option=lambda builder, value: builder.set_operation_mode(value),
+                get_current_option=lambda dev: getattr(dev, "operation_mode", None),
+                is_available=lambda dev: getattr(dev, "has_operation_mode", False),
+            )
+            entities.append(PanasonicSelectEntity(coordinator, op_desc))
+        # Presets
+        if hasattr(device, "has_presets") and getattr(device, "has_presets", False):
+            preset_desc = PanasonicSelectEntityDescription(
+                key="preset",
+                translation_key="preset",
+                name="Preset",
+                icon="mdi:star",
+                options=getattr(device, "presets", []),
+                set_option=lambda builder, value: builder.set_preset(value),
+                get_current_option=lambda dev: getattr(dev, "preset", None),
+                is_available=lambda dev: getattr(dev, "has_presets", False),
+            )
+            entities.append(PanasonicSelectEntity(coordinator, preset_desc))
 
     async_add_entities(entities)
 

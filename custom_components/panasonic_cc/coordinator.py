@@ -233,22 +233,34 @@ class AquareaDeviceCoordinator(DataUpdateCoordinator):
         if self._is_demo:
             return "demo-house"
         if self._device is not None:
-            return (
-                getattr(self._device, "device_id", None) or self._aquarea_device_info.id
-            )
+            # Buscar id, device_id, guid, long_id
+            for attr in ("device_id", "id", "guid", "long_id"):
+                val = getattr(self._device, attr, None)
+                if val:
+                    return str(val)
         return self._aquarea_device_info.id
 
     @property
     def device_info(self) -> DeviceInfo:
+        # Acceso seguro a nombre
         name = (
-            getattr(self._device, "device_name", None)
+            getattr(self._device, "display_name", None)
+            or getattr(self._device, "nickname", None)
+            or getattr(self._device, "device_name", None)
             or getattr(self._device, "name", None)
             or self._aquarea_device_info.name
         )
         manufacturer = getattr(self._device, "manufacturer", None) or "Panasonic"
-        model = getattr(self._device, "model", None) or ""
-        sw_version = getattr(self._device, "version", None)
-
+        model = getattr(self._device, "model", None) or getattr(self._aquarea_device_info, "model", "")
+        # Acceso seguro a versión
+        sw_version = (
+            getattr(self._device, "firmware_version", None)
+            or getattr(self._device, "version", None)
+            or getattr(self._aquarea_device_info, "version", None)
+        )
+        # Logging de atributos disponibles
+        if self._device is not None:
+            _LOGGER.debug("Aquarea device attributes: %s", dir(self._device))
         return DeviceInfo(
             identifiers={(DOMAIN, self.device_id)},
             manufacturer=manufacturer,

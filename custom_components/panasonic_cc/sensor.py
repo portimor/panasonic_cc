@@ -252,10 +252,115 @@ async def async_setup_entry(hass, entry, async_add_entities):
             PanasonicEnergySensorEntity(coordinator, HEATING_POWER_DESCRIPTION)
         )
 
+
     for coordinator in aquarea_coordinators:
-        entities.append(
-            AquareaSensorEntity(coordinator, AQUAREA_OUTSIDE_TEMPERATURE_DESCRIPTION)
-        )
+        device = coordinator.device
+        # Temperatura exterior
+        entities.append(AquareaSensorEntity(coordinator, AQUAREA_OUTSIDE_TEMPERATURE_DESCRIPTION))
+        # Temperatura del tanque
+        if hasattr(device, "tank_temperature"):
+            tank_temp_desc = AquareaSensorEntityDescription(
+                key="tank_temperature",
+                translation_key="tank_temperature",
+                name="Tank Temperature",
+                icon="mdi:water-boiler",
+                device_class=SensorDeviceClass.TEMPERATURE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                get_state=lambda dev: getattr(dev, "tank_temperature", None),
+                is_available=lambda dev: getattr(dev, "tank_temperature", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, tank_temp_desc))
+        # Temperaturas de zonas
+        if hasattr(device, "zones"):
+            for zone in getattr(device, "zones", []):
+                if hasattr(zone, "temperature"):
+                    zone_temp_desc = AquareaSensorEntityDescription(
+                        key=f"zone_{getattr(zone, 'id', 'x')}_temperature",
+                        translation_key=f"zone_{getattr(zone, 'id', 'x')}_temperature",
+                        name=f"Zone {getattr(zone, 'name', 'X')} Temperature",
+                        icon="mdi:thermometer",
+                        device_class=SensorDeviceClass.TEMPERATURE,
+                        state_class=SensorStateClass.MEASUREMENT,
+                        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                        get_state=lambda dev, z=zone: getattr(z, "temperature", None),
+                        is_available=lambda dev, z=zone: getattr(z, "temperature", None) is not None,
+                    )
+                    entities.append(AquareaSensorEntity(coordinator, zone_temp_desc))
+        # Flow temperature
+        if hasattr(device, "flow_temperature"):
+            flow_temp_desc = AquareaSensorEntityDescription(
+                key="flow_temperature",
+                translation_key="flow_temperature",
+                name="Flow Temperature",
+                icon="mdi:thermometer",
+                device_class=SensorDeviceClass.TEMPERATURE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                get_state=lambda dev: getattr(dev, "flow_temperature", None),
+                is_available=lambda dev: getattr(dev, "flow_temperature", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, flow_temp_desc))
+        # Return temperature
+        if hasattr(device, "return_temperature"):
+            return_temp_desc = AquareaSensorEntityDescription(
+                key="return_temperature",
+                translation_key="return_temperature",
+                name="Return Temperature",
+                icon="mdi:thermometer",
+                device_class=SensorDeviceClass.TEMPERATURE,
+                state_class=SensorStateClass.MEASUREMENT,
+                native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+                get_state=lambda dev: getattr(dev, "return_temperature", None),
+                is_available=lambda dev: getattr(dev, "return_temperature", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, return_temp_desc))
+        # Estado del compresor
+        if hasattr(device, "compressor_status"):
+            comp_desc = AquareaSensorEntityDescription(
+                key="compressor_status",
+                translation_key="compressor_status",
+                name="Compressor Status",
+                icon="mdi:engine",
+                get_state=lambda dev: getattr(dev, "compressor_status", None),
+                is_available=lambda dev: getattr(dev, "compressor_status", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, comp_desc))
+        # Consumo energético
+        if hasattr(device, "energy_consumption"):
+            energy_desc = AquareaSensorEntityDescription(
+                key="energy_consumption",
+                translation_key="energy_consumption",
+                name="Energy Consumption",
+                icon="mdi:flash",
+                device_class=SensorDeviceClass.ENERGY,
+                state_class=SensorStateClass.TOTAL_INCREASING,
+                native_unit_of_measurement="kWh",
+                get_state=lambda dev: getattr(dev, "energy_consumption", None),
+                is_available=lambda dev: getattr(dev, "energy_consumption", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, energy_desc))
+        # Códigos de error / alarmas
+        if hasattr(device, "error_code"):
+            error_desc = AquareaSensorEntityDescription(
+                key="error_code",
+                translation_key="error_code",
+                name="Error Code",
+                icon="mdi:alert",
+                get_state=lambda dev: getattr(dev, "error_code", None),
+                is_available=lambda dev: getattr(dev, "error_code", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, error_desc))
+        if hasattr(device, "alarm_code"):
+            alarm_desc = AquareaSensorEntityDescription(
+                key="alarm_code",
+                translation_key="alarm_code",
+                name="Alarm Code",
+                icon="mdi:alert-octagon",
+                get_state=lambda dev: getattr(dev, "alarm_code", None),
+                is_available=lambda dev: getattr(dev, "alarm_code", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, alarm_desc))
 
     async_add_entities(entities)
 
