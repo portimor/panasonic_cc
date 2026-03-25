@@ -362,6 +362,81 @@ async def async_setup_entry(hass, entry, async_add_entities):
             )
             entities.append(AquareaSensorEntity(coordinator, alarm_desc))
 
+        # Pump Duty
+        if hasattr(device, "pump_duty"):
+            pump_desc = AquareaSensorEntityDescription(
+                key="pump_duty",
+                translation_key="pump_duty",
+                name="Pump Duty",
+                icon="mdi:pump",
+                state_class=SensorStateClass.MEASUREMENT,
+                get_state=lambda dev: getattr(dev, "pump_duty", None),
+                is_available=lambda dev: getattr(dev, "pump_duty", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, pump_desc))
+            
+        # Current Direction
+        if hasattr(device, "current_direction"):
+            dir_desc = AquareaSensorEntityDescription(
+                key="current_direction",
+                translation_key="current_direction",
+                name="Current Direction",
+                icon="mdi:directions-fork",
+                get_state=lambda dev: getattr(dev, "current_direction", None),
+                is_available=lambda dev: getattr(dev, "current_direction", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, dir_desc))
+            
+        # Special Status
+        if hasattr(device, "special_status"):
+            special_desc = AquareaSensorEntityDescription(
+                key="special_status",
+                translation_key="special_status",
+                name="Special Status",
+                icon="mdi:information",
+                get_state=lambda dev: getattr(dev, "special_status", None),
+                is_available=lambda dev: getattr(dev, "special_status", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, special_desc))
+            
+        # Device Mode Status
+        if hasattr(device, "device_mode_status"):
+            mode_desc = AquareaSensorEntityDescription(
+                key="device_mode_status",
+                translation_key="device_mode_status",
+                name="Device Mode Status",
+                icon="mdi:list-status",
+                get_state=lambda dev: getattr(dev, "device_mode_status", None),
+                is_available=lambda dev: getattr(dev, "device_mode_status", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, mode_desc))
+            
+        # Holiday Timer
+        if hasattr(device, "holiday_timer"):
+            hol_desc = AquareaSensorEntityDescription(
+                key="holiday_timer",
+                translation_key="holiday_timer",
+                name="Holiday Timer",
+                icon="mdi:calendar-clock",
+                get_state=lambda dev: getattr(dev, "holiday_timer", None),
+                is_available=lambda dev: getattr(dev, "holiday_timer", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, hol_desc))
+            
+        # Powerful Time
+        if hasattr(device, " शक्तिशाली_time"): # Wait, typo, let me use powerful_time.
+            pass
+        if hasattr(device, "powerful_time"):
+            pow_desc = AquareaSensorEntityDescription(
+                key="powerful_time",
+                translation_key="powerful_time",
+                name="Powerful Time",
+                icon="mdi:timer-outline",
+                get_state=lambda dev: getattr(dev, "powerful_time", None),
+                is_available=lambda dev: getattr(dev, "powerful_time", None) is not None,
+            )
+            entities.append(AquareaSensorEntity(coordinator, pow_desc))
+
     async_add_entities(entities)
 
 

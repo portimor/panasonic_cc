@@ -102,6 +102,7 @@ COMPONENT_TYPES = [
     Platform.SELECT,
     Platform.NUMBER,
     Platform.WATER_HEATER,
+    Platform.BINARY_SENSOR,
 ]
 
 STARTUP = """

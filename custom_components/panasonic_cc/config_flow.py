@@ -100,6 +100,10 @@ class FlowHandler(config_entries.ConfigFlow, domain=PANASONIC_DOMAIN):
                         vol.Required(CONF_USERNAME): str,
                         vol.Required(CONF_PASSWORD): str,
                         vol.Optional(
+                            CONF_FORCE_OUTSIDE_SENSOR,
+                            default=False,
+                        ): bool,
+                        vol.Optional(
                             CONF_ENABLE_DAILY_ENERGY_SENSOR,
                             default=DEFAULT_ENABLE_DAILY_ENERGY_SENSOR,
                         ): bool,
@@ -211,6 +215,12 @@ class PanasonicOptionsFlowHandler(config_entries.OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
+                    vol.Optional(
+                        CONF_FORCE_OUTSIDE_SENSOR,
+                        default=self.config_entry.options.get(
+                            CONF_FORCE_OUTSIDE_SENSOR, False
+                        ),
+                    ): bool,
                     vol.Optional(
                         CONF_ENABLE_DAILY_ENERGY_SENSOR,
                         default=self.config_entry.options.get(
